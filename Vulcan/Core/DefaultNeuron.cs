@@ -13,10 +13,13 @@ namespace Vulcan.Core
 
         private ArrayList m_Weights;
 
+        private ArrayList m_Outputs;
+
         public DefaultNeuron()
         {
             m_Inputs = new ArrayList();
             m_Weights = new ArrayList();
+            m_Outputs = new ArrayList();
         }
 
         public double GetWeight(int id)
@@ -33,6 +36,14 @@ namespace Vulcan.Core
                 throw new IndexOutOfRangeException();
 
             return (double)m_Inputs[id];
+        }
+
+        public double GetOutput(int id)
+        {
+            if (id < 0 || id >= m_Outputs.Count)
+                throw new IndexOutOfRangeException();
+
+            return (double)m_Outputs[id];
         }
     }
 }

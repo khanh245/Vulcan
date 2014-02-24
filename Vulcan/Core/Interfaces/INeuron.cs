@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace Vulcan.Core.Interfaces
 {
-    public interface INeuron
+    internal interface INeuron
     {
-        double GetWeight (int id);
+        double GetWeight(int id);
 
-        double GetInput (int id);
+        double GetInput(int id);
+
+        double GetOutput(int id);
     }
 }

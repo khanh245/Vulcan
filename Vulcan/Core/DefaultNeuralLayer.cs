@@ -7,7 +7,7 @@ using Vulcan.Core.Interfaces;
 
 namespace Vulcan.Core
 {
-    public class DefaultNeuralLayer : INeuralLayer
+    internal class DefaultNeuralLayer : INeuralLayer
     {
         private List<INeuron> m_Neurons;
 
