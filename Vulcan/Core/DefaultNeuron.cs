@@ -45,5 +45,17 @@ namespace Vulcan.Core
 
             return (double)m_Outputs[id];
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+            // TODO: Return Hashed Genetic Code
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+            // TODO: Return Genetic Code
+        }
     }
 }
