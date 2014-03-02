@@ -17,6 +17,7 @@ namespace Vulcan
             m_Layers.Add(new DefaultNeuralLayer());
             m_Layers.Add(new DefaultNeuralLayer());
             m_Layers.Add(new DefaultNeuralLayer());
+
         }
     }
 }
