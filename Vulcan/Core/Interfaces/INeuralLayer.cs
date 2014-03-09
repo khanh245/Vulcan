@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Vulcan.Core.Interfaces
 {
-    internal interface INeuralLayer
+    public interface INeuralLayer
     {
         INeuron GetNeuron(int id);
 

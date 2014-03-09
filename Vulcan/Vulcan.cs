@@ -8,13 +8,25 @@ using Vulcan.Core.Interfaces;
 
 namespace Vulcan
 {
-    public class Vulcan :   INeuralLayer
+    public class Vulcan  :   INeuralLayer
     {
         private List<INeuralLayer> m_Layers = new List<INeuralLayer>();
 
-        public Vulcan(int input, int hidden, int output)
+        public Vulcan(int hidden)
         {
+            DefaultNeuralLayer input = new DefaultNeuralLayer("Input");
+            AddLayer(input);
 
+            for (int i = 0; i < hidden; ++i)
+            {
+                DefaultNeuralLayer layer = new DefaultNeuralLayer(string.Format("Hidden{0}", i+1));
+                AddLayer(layer);
+            }
+
+            DefaultNeuralLayer output = new DefaultNeuralLayer("Output");
+            AddLayer(output);
+
+            Initialize();
         }
 
         public void AddLayer (INeuralLayer layer)
@@ -31,5 +43,27 @@ namespace Vulcan
         {
             return m_Layers.ElementAt(id);
         }
+
+        private void Initialize()
+        {
+
+        }
+
+        #region "Not Supported"
+        public INeuron GetNeuron(int id)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void AddNeuron(INeuron neuron)
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool DeleteNeuron(INeuron neuron)
+        {
+            throw new NotSupportedException();
+        }
+        #endregion
     }
 }

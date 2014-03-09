@@ -10,7 +10,9 @@ namespace Vulcan
     {
         static void Main(string[] args)
         {
-
+            Vulcan vulcan = new Vulcan(3);
+            Console.WriteLine("testing done.");
+            Console.ReadKey();
         }
     }
 }

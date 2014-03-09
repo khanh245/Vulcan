@@ -11,9 +11,12 @@ namespace Vulcan.Core
     {
         public List<INeuron> m_Neurons;
 
-        public DefaultNeuralLayer()
+        public string Name { get; set; }
+
+        public DefaultNeuralLayer(string input)
         {
             m_Neurons = new List<INeuron>();
+            Name = input;
         }
 
         public void AddNeuron(INeuron neuron)
@@ -24,6 +27,11 @@ namespace Vulcan.Core
         public bool DeleteNeuron(INeuron neuron)
         {
             return m_Neurons.Remove(neuron);
+        }
+
+        public INeuron GetNeuron (int id)
+        {
+            return m_Neurons.ElementAt(id);
         }
     }
 }
