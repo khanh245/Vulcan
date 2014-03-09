@@ -9,41 +9,17 @@ namespace Vulcan.Core
 {
     public class DefaultNeuron  :   INeuron
     {
-        private ArrayList m_Inputs;
+        public ArrayList Inputs { get; set; }
 
-        private ArrayList m_Weights;
+        public ArrayList Weights { get; set; }
 
-        private ArrayList m_Outputs;
+        public ArrayList Outputs { get; set; }
 
         public DefaultNeuron()
         {
-            m_Inputs = new ArrayList();
-            m_Weights = new ArrayList();
-            m_Outputs = new ArrayList();
-        }
-
-        public double GetWeight(int id)
-        {
-            if (id < 0 || id >= m_Weights.Count)
-                throw new IndexOutOfRangeException();
-
-            return (double)m_Weights[id];
-        }
-
-        public double GetInput(int id)
-        {
-            if (id < 0 || id >= m_Inputs.Count)
-                throw new IndexOutOfRangeException();
-
-            return (double)m_Inputs[id];
-        }
-
-        public double GetOutput(int id)
-        {
-            if (id < 0 || id >= m_Outputs.Count)
-                throw new IndexOutOfRangeException();
-
-            return (double)m_Outputs[id];
+            Inputs = new ArrayList();
+            Weights = new ArrayList();
+            Outputs = new ArrayList();
         }
 
         public override int GetHashCode()

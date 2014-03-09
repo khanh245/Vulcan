@@ -9,18 +9,11 @@ namespace Vulcan.Core
 {
     internal class DefaultNeuralLayer : INeuralLayer
     {
-        private List<INeuron> m_Neurons;
+        public List<INeuron> m_Neurons;
 
         public DefaultNeuralLayer()
         {
             m_Neurons = new List<INeuron>();
-        }
-
-        public INeuron GetNeuron(int id)
-        {
-            if (m_Neurons.Count > 0)
-                return m_Neurons.ElementAt(id);
-            else return null;
         }
 
         public void AddNeuron(INeuron neuron)
