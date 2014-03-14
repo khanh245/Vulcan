@@ -3,23 +3,29 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Vulcan.Core.Interfaces;
 
 namespace Vulcan.Core
 {
-    public class DefaultNeuron  :   INeuron
+    public class DefaultNeuron
     {
-        public ArrayList Inputs { get; set; }
+        public double Inputs { get; set; }
 
-        public ArrayList Weights { get; set; }
+        public double Weights { get; set; }
 
-        public ArrayList Outputs { get; set; }
+        public double Outputs { get; set; }
 
         public DefaultNeuron()
         {
-            Inputs = new ArrayList();
-            Weights = new ArrayList();
-            Outputs = new ArrayList();
+            Inputs = 0.0;
+            Weights = 0.0;
+            Outputs = 0.0;
+        }
+
+        public DefaultNeuron (double i, double w, double o)
+        {
+            Inputs = i;
+            Weights = w;
+            Outputs = o;
         }
 
         public override int GetHashCode()

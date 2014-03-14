@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Vulcan.Core;
-using Vulcan.Core.Interfaces;
 
 namespace Vulcan
 {
-    public class Vulcan  :   INeuralLayer
+    public class Vulcan
     {
-        private List<INeuralLayer> m_Layers = new List<INeuralLayer>();
+        private List<DefaultNeuralLayer> m_Layers = new List<DefaultNeuralLayer>();
 
         public Vulcan(int hidden)
         {
@@ -25,45 +24,29 @@ namespace Vulcan
 
             DefaultNeuralLayer output = new DefaultNeuralLayer("Output");
             AddLayer(output);
-
-            Initialize();
         }
 
-        public void AddLayer (INeuralLayer layer)
+        public void AddLayer (DefaultNeuralLayer layer)
         {
             m_Layers.Add(layer);
         }
 
-        public bool RemoveLayer (INeuralLayer layer)
+        public int LayerCount 
+        { 
+            get
+            {
+                return m_Layers.Count;
+            }
+        }
+
+        public bool RemoveLayer (DefaultNeuralLayer layer)
         {
             return m_Layers.Remove(layer);
         }
 
-        public INeuralLayer GetNeuralLayer(int id)
+        public DefaultNeuralLayer GetNeuralLayer(int id)
         {
             return m_Layers.ElementAt(id);
         }
-
-        private void Initialize()
-        {
-
-        }
-
-        #region "Not Supported"
-        public INeuron GetNeuron(int id)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void AddNeuron(INeuron neuron)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool DeleteNeuron(INeuron neuron)
-        {
-            throw new NotSupportedException();
-        }
-        #endregion
     }
 }

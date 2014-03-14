@@ -42,9 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\DefaultNeuralLayer.cs" />
-    <Compile Include="Core\Interfaces\INeuron.cs" />
     <Compile Include="Helpers\Activators.cs" />
-    <Compile Include="Core\Interfaces\INeuralLayer.cs" />
     <Compile Include="Core\DefaultNeuron.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
