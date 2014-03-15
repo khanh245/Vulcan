@@ -23,8 +23,8 @@ namespace Vulcan.Core
             DefaultNeuron neuron = new DefaultNeuron();
             if (Name != "Input")
             {
-                Random rand = new Random();
-                neuron.Weights = (1.0 * rand.Next()) / (Int32.MaxValue * 1.0);
+                Random rand = new Random(Guid.NewGuid().GetHashCode());
+                neuron.Weights = rand.NextDouble();
             }
             else
                 neuron.Weights = 1.0;

@@ -26,8 +26,16 @@ namespace Vulcan
             hidden.AddNeuron();
 
             DefaultNeuralLayer output = vulcan.GetNeuralLayer(vulcan.LayerCount - 1);
-            output.AddNeurons(1.0, 1.0);
+            output.AddNeuron();
 
+            vulcan.Expecting(2.0);
+            vulcan.Train(1.0, 1.0);
+
+            vulcan.Expecting(3.0);
+            vulcan.Train(1.0, 2.0);
+
+            vulcan.Expecting(0.0);
+            vulcan.Train(0.0, 0.0);
 
             Console.WriteLine("testing done.");
             Console.ReadKey();
