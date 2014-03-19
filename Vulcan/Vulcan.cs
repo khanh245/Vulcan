@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,12 +29,7 @@ namespace Vulcan
             AddLayer(output);
         }
 
-        public void AddLayer(DefaultNeuralLayer layer)
-        {
-            m_Layers.Add(layer);
-        }
-
-        public void Train(params double[] datas)
+        public void FeedForward(params double[] datas)
         {
             if (datas.Count() == m_Layers[0].m_Neurons.Count())
             {
@@ -79,11 +75,21 @@ namespace Vulcan
                     neuron.Outputs = Activators.SigmoidFunction(neuron.Outputs);
                 }
                 #endregion
-
-                /// Back-propagate Errors and Update Weights
-                BackPropagate();
             }
             else throw new ArgumentOutOfRangeException();
+        }
+
+        public void AddLayer(DefaultNeuralLayer layer)
+        {
+            m_Layers.Add(layer);
+        }
+
+        public void Train(params double[] datas)
+        {
+            FeedForward(datas);
+
+            /// Back-propagate Errors and Update Weights
+            BackPropagate();
         }
 
         public void Expecting(params double[] expecteds)
@@ -104,10 +110,10 @@ namespace Vulcan
             // Output Errors
             for (int j = 0; j < m_Layers[LayerCount-1].m_Neurons.Count; ++j)
             {
-                error = Math.Abs(m_Layers[LayerCount-1].m_Neurons[j].Outputs - m_ExpectedOutputs[j]);
+                error = m_Layers[LayerCount-1].m_Neurons[j].Outputs - m_ExpectedOutputs[j];
                 deltaWeight = error / m_Layers[LayerCount - 1].m_Neurons[j].Inputs;
                 deltaWeight *= Activators.DerivativeSigmoid(deltaWeight);
-                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight;
+                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight * 0.01;
             }
 
             // Hidden Layers Errors
@@ -116,7 +122,7 @@ namespace Vulcan
                 double hError = 0.0;
 
                 // From output's weight
-                for (int j = 0; j <= m_Layers[LayerCount - 1].m_Neurons.Count; ++j )
+                for (int j = 0; j <= m_Layers[LayerCount - 1].m_Neurons.Count - 1; ++j )
                 {
                     hError += m_Layers[LayerCount-1].m_Neurons[j].Weights * m_Layers[i].m_Neurons[j].Weights;
                 }
@@ -126,8 +132,6 @@ namespace Vulcan
                     neuron.Weights = hError * Activators.DerivativeSigmoid(hError);
                 }
             }
-
-            // Input Errors
         }
 
         public int LayerCount
@@ -146,6 +150,17 @@ namespace Vulcan
         public DefaultNeuralLayer GetNeuralLayer(int id)
         {
             return m_Layers.ElementAt(id);
+        }
+
+        public ArrayList GetOutputs()
+        {
+            ArrayList result = new ArrayList();
+            foreach (var n in m_Layers[LayerCount-1].m_Neurons)
+            {
+                result.Add(n.Outputs);
+            }
+
+            return result;
         }
     }
 }

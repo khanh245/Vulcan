@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections;
 using Vulcan.Core;
 
 namespace Vulcan
@@ -23,20 +20,33 @@ namespace Vulcan
             hidden = vulcan.GetNeuralLayer(2);
             hidden.AddNeuron();
             hidden.AddNeuron();
-            hidden.AddNeuron();
 
             DefaultNeuralLayer output = vulcan.GetNeuralLayer(vulcan.LayerCount - 1);
             output.AddNeuron();
 
-            vulcan.Expecting(2.0);
-            vulcan.Train(1.0, 1.0);
+            double i = 0;
+            while (i == 99999999999999)
+            {
+                vulcan.Expecting(1.0);
+                vulcan.Train(1.0, 1.0);
 
-            vulcan.Expecting(3.0);
-            vulcan.Train(1.0, 2.0);
+                vulcan.Expecting(0);
+                vulcan.Train(1.0, 0.0);
+                vulcan.Train(0.0, 1.0);
+                vulcan.Train(0, 0);
+                i++;
+            }
 
-            vulcan.Expecting(0.0);
-            vulcan.Train(0.0, 0.0);
+            vulcan.FeedForward(0.0, 1.0);
+            ArrayList result = vulcan.GetOutputs();
 
+            Console.WriteLine("Result: ");
+            foreach (var item in result)
+            {
+                Console.WriteLine(item.ToString());
+            }
+
+            Console.WriteLine();
             Console.WriteLine("testing done.");
             Console.ReadKey();
         }
