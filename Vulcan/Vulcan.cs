@@ -110,10 +110,10 @@ namespace Vulcan
             // Output Errors
             for (int j = 0; j < m_Layers[LayerCount-1].m_Neurons.Count; ++j)
             {
-                error = m_Layers[LayerCount-1].m_Neurons[j].Outputs - m_ExpectedOutputs[j];
-                deltaWeight = error / m_Layers[LayerCount - 1].m_Neurons[j].Inputs;
-                deltaWeight *= Activators.DerivativeSigmoid(deltaWeight);
-                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight * 0.01;
+                error = m_ExpectedOutputs[j] - m_Layers[LayerCount-1].m_Neurons[j].Outputs;
+                deltaWeight = error * m_Layers[LayerCount - 1].m_Neurons[j].Outputs * (1 - m_Layers[LayerCount-1].m_Neurons[j].Outputs);
+                deltaWeight = Activators.DerivativeSigmoid(deltaWeight);
+                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight * 0.001;
             }
 
             // Hidden Layers Errors
