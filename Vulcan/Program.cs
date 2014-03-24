@@ -27,16 +27,41 @@ namespace Vulcan
             double i = 0;
 
             // neural network learns
-            while (i != 1000)
+            while (i != 20000)
             {
                 // And operation
                 vulcan.Expecting(1.0);
                 vulcan.Train(1.0, 1.0);
+                vulcan.Train(0.5, 0.5);
+                vulcan.Train(0.75, 0.75);
+                vulcan.Train(0.9, 0.9);
+                vulcan.Train(0.85, 0.85);
+                vulcan.Train(0.65, 0.65);
+                vulcan.Train(0.55, 0.55);
 
                 vulcan.Expecting(0);
                 vulcan.Train(1.0, 0.0);
+                vulcan.Train(0.5, 0);
+                vulcan.Train(0.75, 0);
+                vulcan.Train(0.95, 0);
+                vulcan.Train(0.9, 0);
+
                 vulcan.Train(0.0, 1.0);
+                vulcan.Train(0.0, 0.5);
+                vulcan.Train(0.0, 0.75);
+                vulcan.Train(0.0, 0.65);
+                vulcan.Train(0.0, 0.85);
+                vulcan.Train(0.0, 0.95);
+                vulcan.Train(0.0, 0.55);
+
                 vulcan.Train(0, 0);
+                vulcan.Train(0.25, 0.25);
+                vulcan.Train(0.35, 0.35);
+                vulcan.Train(0.45, 0.45);
+                vulcan.Train(0.3, 0.3);
+                vulcan.Train(0.2, 0.2);
+                vulcan.Train(0.1, 0.1);
+
                 i++;
             }
 

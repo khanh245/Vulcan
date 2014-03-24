@@ -14,6 +14,8 @@ namespace Vulcan
         private List<DefaultNeuralLayer> m_Layers = new List<DefaultNeuralLayer>();
         private List<double> m_ExpectedOutputs = new List<double>();
 
+        public double Error { get; private set; }
+
         public Vulcan(int hidden)
         {
             DefaultNeuralLayer input = new DefaultNeuralLayer("Input");
@@ -111,9 +113,9 @@ namespace Vulcan
             for (int j = 0; j < m_Layers[LayerCount-1].m_Neurons.Count; ++j)
             {
                 error = m_ExpectedOutputs[j] - m_Layers[LayerCount-1].m_Neurons[j].Outputs;
+                Error = ((m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].m_Neurons[j].Outputs) * (m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].m_Neurons[j].Outputs)) / 2;
                 deltaWeight = error * m_Layers[LayerCount - 1].m_Neurons[j].Outputs * (1 - m_Layers[LayerCount-1].m_Neurons[j].Outputs);
-                deltaWeight = Activators.DerivativeSigmoid(deltaWeight);
-                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight * 0.001;
+                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight * 0.01;
             }
 
             // Hidden Layers Errors
@@ -129,7 +131,7 @@ namespace Vulcan
 
                 foreach (var neuron in m_Layers[i].m_Neurons)
                 {
-                    neuron.Weights = hError * Activators.DerivativeSigmoid(hError);
+                    neuron.Weights = hError;
                 }
             }
         }
