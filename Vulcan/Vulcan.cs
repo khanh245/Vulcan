@@ -86,12 +86,12 @@ namespace Vulcan
             m_Layers.Add(layer);
         }
 
-        public void Train(params double[] datas)
+        public void Train(double learnRate, params double[] datas)
         {
             FeedForward(datas);
 
             /// Back-propagate Errors and Update Weights
-            BackPropagate();
+            BackPropagate(learnRate);
         }
 
         public void Expecting(params double[] expecteds)
@@ -104,35 +104,45 @@ namespace Vulcan
             }
         }
 
-        private void BackPropagate()
+        private void BackPropagate(double learnRate)
         {
             double deltaWeight = 0.0;
             double error = 0.0;
+            double errorSum = 0.0;
+            double tempSum = 0.0;
 
             // Output Errors
             for (int j = 0; j < m_Layers[LayerCount-1].m_Neurons.Count; ++j)
             {
-                error = m_ExpectedOutputs[j] - m_Layers[LayerCount-1].m_Neurons[j].Outputs;
                 Error = ((m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].m_Neurons[j].Outputs) * (m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].m_Neurons[j].Outputs)) / 2;
-                deltaWeight = error * m_Layers[LayerCount - 1].m_Neurons[j].Outputs * (1 - m_Layers[LayerCount-1].m_Neurons[j].Outputs);
-                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight * 0.01;
+                error = (m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].m_Neurons[j].Outputs) * m_Layers[LayerCount - 1].m_Neurons[j].Outputs * (1 - m_Layers[LayerCount - 1].m_Neurons[j].Outputs);
+                deltaWeight = learnRate * error * m_Layers[LayerCount - 1].m_Neurons[j].Outputs + m_Layers[LayerCount - 1].m_Neurons[j].Weights * 0.1;
+                //deltaWeight = Activators.DerivativeSigmoid(deltaWeight);
+                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight;
+                errorSum += m_Layers[LayerCount - 1].m_Neurons[j].Weights * error;
             }
 
             // Hidden Layers Errors
             for (int i = LayerCount-2; i >= 1; --i)
             {
-                double hError = 0.0;
-
-                // From output's weight
-                for (int j = 0; j <= m_Layers[LayerCount - 1].m_Neurons.Count - 1; ++j )
+                for (int j = 0; j < m_Layers[i].m_Neurons.Count; ++j)
                 {
-                    hError += m_Layers[LayerCount-1].m_Neurons[j].Weights * m_Layers[i].m_Neurons[j].Weights;
+                    error = m_Layers[i].m_Neurons[j].Outputs * (1 - m_Layers[i].m_Neurons[j].Outputs) * errorSum;
+                    deltaWeight = learnRate * error * m_Layers[i].m_Neurons[j].Inputs + m_Layers[i].m_Neurons[j].Weights * 0.1;
+                    m_Layers[i].m_Neurons[j].Weights += deltaWeight;
+                    tempSum += m_Layers[i].m_Neurons[j].Weights * error;
                 }
 
-                foreach (var neuron in m_Layers[i].m_Neurons)
-                {
-                    neuron.Weights = hError;
-                }
+                errorSum = tempSum;
+                tempSum = 0;
+            }
+
+            // Input Layer Errors
+            foreach (var neuron in m_Layers[0].m_Neurons)
+            {
+                error = neuron.Outputs * (1 - neuron.Outputs) * errorSum;
+                deltaWeight = learnRate * error * neuron.Inputs + neuron.Weights * 0.1;
+                neuron.Weights += deltaWeight;
             }
         }
 
