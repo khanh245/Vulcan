@@ -8,35 +8,35 @@ namespace Vulcan.Core
 {
     public class DefaultNeuron
     {
-        public double Inputs { get; set; }
+        public double Input { get; set; }
 
-        public double Weights { get; set; }
+        public double Weight { get; set; }
 
-        public double Outputs { get; set; }
+        public double Output { get; set; }
 
         public DefaultNeuron()
         {
-            Inputs = 0.0;
-            Weights = 0.0;
-            Outputs = 0.0;
+            Input = 0.0;
+            Weight = 0.0;
+            Output = 0.0;
         }
 
         public DefaultNeuron (double i, double w, double o)
         {
-            Inputs = i;
-            Weights = w;
-            Outputs = o;
+            Input = i;
+            Weight = w;
+            Output = o;
         }
 
-        public override int GetHashCode()
+        public int GetGeneticCode()
         {
-            return base.GetHashCode();
+            throw new NotImplementedException();
             // TODO: Return Hashed Genetic Code
         }
 
         public override string ToString()
         {
-            return base.ToString();
+            throw new NotImplementedException();
             // TODO: Return Genetic Code
         }
     }

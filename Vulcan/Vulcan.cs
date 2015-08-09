@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ namespace Vulcan
 
         public Vulcan(int hidden)
         {
+            Error = 0.0;
+
             DefaultNeuralLayer input = new DefaultNeuralLayer("Input");
             AddLayer(input);
 
@@ -33,52 +36,81 @@ namespace Vulcan
 
         public void FeedForward(params double[] datas)
         {
-            if (datas.Count() == m_Layers[0].m_Neurons.Count())
+            if (datas.Count() != m_Layers[0].Neurons.Count) throw new ArgumentException();
+
+            Debug.WriteLine("\n----- Feeding Forward -----");
+
+            int count = 0;
+
+            /// The input layer        
+            DefaultNeuralLayer input = GetInputLayer();
+
+            /// The output layer
+            DefaultNeuralLayer output = GetOutputLayer();
+
+            Debug.WriteLine("Input Layer");
+
+            /// Input layer flowthrough
+            for (int i = 0; i < input.Neurons.Count; ++i)
             {
-                #region Feed Forward Algorithm
-                /// Input Layers
-                for (int i = 0; i < m_Layers[0].m_Neurons.Count; ++i)
-                {
-                    m_Layers[0].m_Neurons[i].Inputs = datas[i];
-                    m_Layers[0].m_Neurons[i].Outputs = datas[i] * m_Layers[0].m_Neurons[i].Weights;
-                    m_Layers[0].m_Neurons[i].Outputs = Activators.SigmoidFunction(m_Layers[0].m_Neurons[i].Outputs);
-                }
+                input.Neurons[i].Input = datas[i];
+                input.Neurons[i].Output = Activators.SigmoidFunction(input.Neurons[i].Input * input.Neurons[i].Weight);
 
-                /// Hidden Layers
-                for (int i = 1; i < m_Layers.Count - 1; i++)
-                {
-                    double inputToHidden = 0.0;
-
-                    foreach (var neuron in m_Layers[i - 1].m_Neurons)
-                    {
-                        inputToHidden += neuron.Outputs;
-                    }
-
-                    foreach (var neuron in m_Layers[i].m_Neurons)
-                    {
-                        neuron.Inputs = inputToHidden;
-                        neuron.Outputs = inputToHidden * neuron.Weights;
-                        neuron.Outputs = Activators.SigmoidFunction(neuron.Outputs);
-                    }
-                }
-
-                /// Output Layers
-                foreach (var neuron in m_Layers[m_Layers.Count - 1].m_Neurons)
-                {
-                    double hiddenToOutput = 0.0;
-
-                    foreach (var n in m_Layers[m_Layers.Count - 2].m_Neurons)
-                    {
-                        hiddenToOutput += n.Outputs;
-                    }
-
-                    neuron.Inputs = hiddenToOutput;
-                    neuron.Outputs = hiddenToOutput * neuron.Weights;
-                    neuron.Outputs = Activators.SigmoidFunction(neuron.Outputs);
-                }
-                #endregion
+                Debug.WriteLine("Neuron {0} --- Input: {1}, Output {2}", i,  input.Neurons[i].Input, input.Neurons[i].Output);
             }
-            else throw new ArgumentOutOfRangeException();
+
+            Debug.Write("\n");
+
+            /// Hidden layers flowthrough
+            for (int i = 1; i < m_Layers.Count - 1; ++i)
+            {
+                double inputToHidden = 0.0;
+
+                Debug.WriteLine("Hidden Layer {0}", i);
+
+                foreach (var neuron in m_Layers[i-1].Neurons)
+                {
+                    inputToHidden += neuron.Output; // + bias
+                }
+
+                count = 0;
+                foreach (var neuron in m_Layers[i].Neurons)
+                {
+                    neuron.Input = inputToHidden;
+                    neuron.Output = Activators.SigmoidFunction(neuron.Input * neuron.Weight);
+
+                    Debug.WriteLine("Neuron {0} --- Input: {1}, Output {2}", count, neuron.Input, neuron.Output);
+                    count++;
+                }
+            }
+
+            count = 0;
+            Debug.WriteLine("\nOutput Layer");
+
+            /// Output layer flowthrough
+            foreach (var neuron in output.Neurons)
+            {
+                double hiddenToOutput = 0.0;
+
+                foreach (var n in GetHiddenLayers().Last().Neurons)
+                {
+                    hiddenToOutput += n.Output; // + bias
+                }
+
+                neuron.Input = hiddenToOutput;
+                neuron.Output = Activators.SigmoidFunction(neuron.Input * neuron.Weight);
+
+                Debug.WriteLine("Neuron {0} --- Input: {1}, Output {2}", count, neuron.Input, neuron.Output);
+            }
+
+            /// Calculating total error for neural network
+            for (int i = 0; i < m_ExpectedOutputs.Count; ++i)
+            {
+                Error += (Math.Pow((output.Neurons[i].Output - m_ExpectedOutputs[i]), 2) / 2.0);
+            }
+
+            Debug.Write("\n");
+            Debug.WriteLine("Net Error: {0}", Error);
         }
 
         public void AddLayer(DefaultNeuralLayer layer)
@@ -89,8 +121,6 @@ namespace Vulcan
         public void Train(double learnRate, params double[] datas)
         {
             FeedForward(datas);
-
-            /// Back-propagate Errors and Update Weights
             BackPropagate(learnRate);
         }
 
@@ -106,31 +136,43 @@ namespace Vulcan
 
         private void BackPropagate(double learnRate)
         {
+            Debug.WriteLine("\n----- Back Propagating -----");
+
+            /// The input layer
+            DefaultNeuralLayer input = GetInputLayer();
+
+            /// The hidden layers
+            List<DefaultNeuralLayer> hiddens = GetHiddenLayers();
+
+            /// The output layer
+            DefaultNeuralLayer output = GetOutputLayer();
+
+            /**
             double deltaWeight = 0.0;
             double error = 0.0;
             double errorSum = 0.0;
             double tempSum = 0.0;
 
             // Output Errors
-            for (int j = 0; j < m_Layers[LayerCount-1].m_Neurons.Count; ++j)
+            for (int j = 0; j < m_Layers[LayerCount-1].Neurons.Count; ++j)
             {
-                Error = ((m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].m_Neurons[j].Outputs) * (m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].m_Neurons[j].Outputs)) / 2;
-                error = (m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].m_Neurons[j].Outputs) * m_Layers[LayerCount - 1].m_Neurons[j].Outputs * (1 - m_Layers[LayerCount - 1].m_Neurons[j].Outputs);
-                deltaWeight = learnRate * error * m_Layers[LayerCount - 1].m_Neurons[j].Outputs + m_Layers[LayerCount - 1].m_Neurons[j].Weights * 0.1;
+                Error = ((m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].Neurons[j].Output) * (m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].Neurons[j].Output)) / 2;
+                error = (m_ExpectedOutputs[j] - m_Layers[LayerCount - 1].Neurons[j].Output) * m_Layers[LayerCount - 1].Neurons[j].Output * (1 - m_Layers[LayerCount - 1].Neurons[j].Output);
+                deltaWeight = learnRate * error * m_Layers[LayerCount - 1].Neurons[j].Output + m_Layers[LayerCount - 1].Neurons[j].Weight * 0.1;
                 //deltaWeight = Activators.DerivativeSigmoid(deltaWeight);
-                m_Layers[LayerCount - 1].m_Neurons[j].Weights += deltaWeight;
-                errorSum += m_Layers[LayerCount - 1].m_Neurons[j].Weights * error;
+                m_Layers[LayerCount - 1].Neurons[j].Weight += deltaWeight;
+                errorSum += m_Layers[LayerCount - 1].Neurons[j].Weight * error;
             }
 
             // Hidden Layers Errors
             for (int i = LayerCount-2; i >= 1; --i)
             {
-                for (int j = 0; j < m_Layers[i].m_Neurons.Count; ++j)
+                for (int j = 0; j < m_Layers[i].Neurons.Count; ++j)
                 {
-                    error = m_Layers[i].m_Neurons[j].Outputs * (1 - m_Layers[i].m_Neurons[j].Outputs) * errorSum;
-                    deltaWeight = learnRate * error * m_Layers[i].m_Neurons[j].Inputs + m_Layers[i].m_Neurons[j].Weights * 0.1;
-                    m_Layers[i].m_Neurons[j].Weights += deltaWeight;
-                    tempSum += m_Layers[i].m_Neurons[j].Weights * error;
+                    error = m_Layers[i].Neurons[j].Output * (1 - m_Layers[i].Neurons[j].Output) * errorSum;
+                    deltaWeight = learnRate * error * m_Layers[i].Neurons[j].Input + m_Layers[i].Neurons[j].Weight * 0.1;
+                    m_Layers[i].Neurons[j].Weight += deltaWeight;
+                    tempSum += m_Layers[i].Neurons[j].Weight * error;
                 }
 
                 errorSum = tempSum;
@@ -138,12 +180,13 @@ namespace Vulcan
             }
 
             // Input Layer Errors
-            foreach (var neuron in m_Layers[0].m_Neurons)
+            foreach (var neuron in m_Layers[0].Neurons)
             {
-                error = neuron.Outputs * (1 - neuron.Outputs) * errorSum;
-                deltaWeight = learnRate * error * neuron.Inputs + neuron.Weights * 0.1;
-                neuron.Weights += deltaWeight;
+                error = neuron.Output * (1 - neuron.Output) * errorSum;
+                deltaWeight = learnRate * error * neuron.Input + neuron.Weight * 0.1;
+                neuron.Weight += deltaWeight;
             }
+            **/
         }
 
         public int LayerCount
@@ -159,17 +202,27 @@ namespace Vulcan
             return m_Layers.Remove(layer);
         }
 
-        public DefaultNeuralLayer GetNeuralLayer(int id)
+        public DefaultNeuralLayer GetInputLayer()
         {
-            return m_Layers.ElementAt(id);
+            return m_Layers.ElementAt(0);
+        }
+
+        public List<DefaultNeuralLayer> GetHiddenLayers()
+        {
+            return m_Layers.GetRange(1, m_Layers.Count - 2);
+        }
+
+        public DefaultNeuralLayer GetOutputLayer()
+        {
+            return m_Layers.Last();
         }
 
         public ArrayList GetOutputs()
         {
             ArrayList result = new ArrayList();
-            foreach (var n in m_Layers[LayerCount-1].m_Neurons)
+            foreach (var n in m_Layers[LayerCount-1].Neurons)
             {
-                result.Add(n.Outputs);
+                result.Add(n.Output);
             }
 
             return result;

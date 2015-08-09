@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using Vulcan.Core;
 
 namespace Vulcan
@@ -8,20 +9,18 @@ namespace Vulcan
     {
         static void Main(string[] args)
         {
-            Vulcan vulcan = new Vulcan(2);  // 2 hidden layers
+            Vulcan vulcan = new Vulcan(1);
             
-            DefaultNeuralLayer input = vulcan.GetNeuralLayer(0);
+            DefaultNeuralLayer input = vulcan.GetInputLayer();
             input.AddNeurons(1.0, 1.0);     // num input neurons
 
-            DefaultNeuralLayer hidden = vulcan.GetNeuralLayer(1);
-            hidden.AddNeuron();
-            hidden.AddNeuron();
-
-            hidden = vulcan.GetNeuralLayer(2);  // 2nd h layer
-            hidden.AddNeuron();
-            hidden.AddNeuron();
-
-            DefaultNeuralLayer output = vulcan.GetNeuralLayer(vulcan.LayerCount - 1);
+            List<DefaultNeuralLayer> hiddens = vulcan.GetHiddenLayers();
+            foreach (var hidden in hiddens)
+            {
+                hidden.AddNeurons(3);
+            }
+            
+            DefaultNeuralLayer output = vulcan.GetOutputLayer();
             output.AddNeuron();
 
             // neural network learns
@@ -59,7 +58,7 @@ namespace Vulcan
                 vulcan.Train(0.2, 0.3, 0.3);
                 vulcan.Train(0.2, 0.2, 0.2);
                 vulcan.Train(0.2, 0.1, 0.1);
-            } while (vulcan.Error > 0.1);
+            } while (vulcan.Error > 0.0001);
 
             vulcan.FeedForward(0.0, 0.0);
             ArrayList result = vulcan.GetOutputs();

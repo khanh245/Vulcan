@@ -8,46 +8,62 @@ namespace Vulcan.Core
 {
     public class DefaultNeuralLayer
     {
-        public List<DefaultNeuron> m_Neurons;
-
         public string Name { get; set; }
+
+        public List<DefaultNeuron> Neurons { get; }
 
         public DefaultNeuralLayer(string input)
         {
-            m_Neurons = new List<DefaultNeuron>();
+            Neurons = new List<DefaultNeuron>();
             Name = input;
+        }
+
+        private double GetRandomWeight()
+        {
+            Random rand = new Random(Guid.NewGuid().GetHashCode());
+            return rand.NextDouble();
         }
 
         public void AddNeuron()
         {
-            DefaultNeuron neuron = new DefaultNeuron();
-            if (Name != "Input")
-            {
-                Random rand = new Random(Guid.NewGuid().GetHashCode());
-                neuron.Weights = rand.NextDouble();
-            }
-            else
-                neuron.Weights = 1.0;
-
-            m_Neurons.Add(neuron);
+            DefaultNeuron neuron = new DefaultNeuron() { Weight = GetRandomWeight() };
+            Neurons.Add(neuron);
         }
 
-        public void AddNeurons (params double[] weights)
+        public void AddNeuron(double weight = 1.0)
+        {
+            Neurons.Add(new DefaultNeuron { Weight = weight });
+        }
+
+        public void AddNeurons(int count)
+        {
+            for (int i = 0; i < count; ++i)
+            {
+                Neurons.Add(new DefaultNeuron { Weight = GetRandomWeight() });
+            }
+        }
+
+        public void AddNeurons(params double[] weights)
         {
             foreach (double w in weights)   
             {
-                m_Neurons.Add(new DefaultNeuron { Weights = w });
+                Neurons.Add(new DefaultNeuron { Weight = w });
             }
         }
 
-        public bool DeleteNeuron(DefaultNeuron neuron)
+        public void RemoveNeuron(int id)
         {
-            return m_Neurons.Remove(neuron);
+            Neurons.RemoveAt(id);
+        }
+
+        public bool RemoveNeuron(DefaultNeuron neuron)
+        {
+            return Neurons.Remove(neuron);
         }
 
         public DefaultNeuron GetNeuron (int id)
         {
-            return m_Neurons.ElementAt(id);
+            return Neurons.ElementAt(id);
         }
     }
 }
