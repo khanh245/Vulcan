@@ -3,54 +3,69 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vulcan.Core;
 using Vulcan.Helpers;
 
 namespace Vulcan
 {
+    /// <summary>
+    /// Represents the Neural Network - Vulcan
+    /// </summary>
     public class Vulcan
     {
-        private List<DefaultNeuralLayer> m_Layers = new List<DefaultNeuralLayer>();
-        private List<double> m_ExpectedOutputs = new List<double>();
+        /// <summary>
+        /// List of all neural layers in the network
+        /// </summary>
+        private readonly List<NeuralLayer> _layers = new List<NeuralLayer>();
 
+        /// <summary>
+        /// List of all expected outputs of the network
+        /// </summary>
+        private readonly List<double> _expectedOutputs = new List<double>();
+
+        /// <summary>
+        /// The error of the neural network
+        /// </summary>
         public double Error { get; private set; }
 
+        /// <summary>
+        /// Initializes an instance of the neural network with X number of hidden layers
+        /// </summary>
+        /// <param name="hidden">Number of hidden layer(s)</param>
         public Vulcan(int hidden)
         {
             Error = 0.0;
 
-            DefaultNeuralLayer input = new DefaultNeuralLayer("Input");
+            NeuralLayer input = new NeuralLayer("Input");
             AddLayer(input);
 
             for (int i = 0; i < hidden; ++i)
             {
-                DefaultNeuralLayer layer = new DefaultNeuralLayer(string.Format("Hidden{0}", i + 1));
+                NeuralLayer layer = new NeuralLayer($"Hidden{i + 1}");
                 AddLayer(layer);
             }
 
-            DefaultNeuralLayer output = new DefaultNeuralLayer("Output");
+            NeuralLayer output = new NeuralLayer("Output");
             AddLayer(output);
         }
 
+        /// <summary>
+        /// Feeding forward algorithm
+        /// </summary>
+        /// <param name="datas">The datas to be fed to the network</param>
         public void FeedForward(params double[] datas)
         {
-            if (datas.Count() != m_Layers[0].Neurons.Count) throw new ArgumentException();
+            if (datas.Count() != _layers[0].Neurons.Count) throw new ArgumentException();
 
             Debug.WriteLine("\n----- Feeding Forward -----");
 
-            int count = 0;
-
-            /// The input layer        
-            DefaultNeuralLayer input = GetInputLayer();
-
-            /// The output layer
-            DefaultNeuralLayer output = GetOutputLayer();
+            int count;
+            NeuralLayer input = GetInputLayer();
+            NeuralLayer output = GetOutputLayer();
 
             Debug.WriteLine("Input Layer");
 
-            /// Input layer flowthrough
+            // Input layer flowthrough
             for (int i = 0; i < input.Neurons.Count; ++i)
             {
                 input.Neurons[i].Input = datas[i];
@@ -61,20 +76,15 @@ namespace Vulcan
 
             Debug.Write("\n");
 
-            /// Hidden layers flowthrough
-            for (int i = 1; i < m_Layers.Count - 1; ++i)
+            // Hidden layers flowthrough
+            for (int i = 1; i < _layers.Count - 1; ++i)
             {
-                double inputToHidden = 0.0;
-
                 Debug.WriteLine("Hidden Layer {0}", i);
 
-                foreach (var neuron in m_Layers[i-1].Neurons)
-                {
-                    inputToHidden += neuron.Output; // + bias
-                }
+                double inputToHidden = _layers[i - 1].Neurons.Sum(neuron => neuron.Output);
 
                 count = 0;
-                foreach (var neuron in m_Layers[i].Neurons)
+                foreach (var neuron in _layers[i].Neurons)
                 {
                     neuron.Input = inputToHidden;
                     neuron.Output = Activators.SigmoidFunction(neuron.Input * neuron.Weight);
@@ -87,15 +97,10 @@ namespace Vulcan
             count = 0;
             Debug.WriteLine("\nOutput Layer");
 
-            /// Output layer flowthrough
+            // Output layer flowthrough
             foreach (var neuron in output.Neurons)
             {
-                double hiddenToOutput = 0.0;
-
-                foreach (var n in GetHiddenLayers().Last().Neurons)
-                {
-                    hiddenToOutput += n.Output; // + bias
-                }
+                double hiddenToOutput = GetHiddenLayers().Last().Neurons.Sum(n => n.Output);
 
                 neuron.Input = hiddenToOutput;
                 neuron.Output = Activators.SigmoidFunction(neuron.Input * neuron.Weight);
@@ -103,49 +108,61 @@ namespace Vulcan
                 Debug.WriteLine("Neuron {0} --- Input: {1}, Output {2}", count, neuron.Input, neuron.Output);
             }
 
-            /// Calculating total error for neural network
-            for (int i = 0; i < m_ExpectedOutputs.Count; ++i)
+            // Calculating total error for neural network
+            for (int i = 0; i < _expectedOutputs.Count; ++i)
             {
-                Error += (Math.Pow((output.Neurons[i].Output - m_ExpectedOutputs[i]), 2) / 2.0);
+                Error += (Math.Pow((output.Neurons[i].Output - _expectedOutputs[i]), 2) / 2.0);
             }
 
             Debug.Write("\n");
             Debug.WriteLine("Net Error: {0}", Error);
         }
 
-        public void AddLayer(DefaultNeuralLayer layer)
+        /// <summary>
+        /// Adds a neural layer to the network
+        /// </summary>
+        /// <param name="layer">The layer to be added</param>
+        public void AddLayer(NeuralLayer layer)
         {
-            m_Layers.Add(layer);
+            _layers.Add(layer);
         }
 
+        /// <summary>
+        /// Trains the neural network
+        /// </summary>
+        /// <param name="learnRate">The learning rate</param>
+        /// <param name="datas">Data to be trained</param>
         public void Train(double learnRate, params double[] datas)
         {
             FeedForward(datas);
             BackPropagate(learnRate);
         }
 
+        /// <summary>
+        /// Sets the expecting outputs of the network
+        /// </summary>
+        /// <param name="expecteds">The expected outputs</param>
         public void Expecting(params double[] expecteds)
         {
-            m_ExpectedOutputs.Clear();
+            _expectedOutputs.Clear();
 
             foreach (var e in expecteds)
             {
-                m_ExpectedOutputs.Add(e);
+                _expectedOutputs.Add(e);
             }
         }
 
+        /// <summary>
+        /// Back propagating result and update where necessary
+        /// </summary>
+        /// <param name="learnRate">The learning rate</param>
         private void BackPropagate(double learnRate)
         {
             Debug.WriteLine("\n----- Back Propagating -----");
 
-            /// The input layer
-            DefaultNeuralLayer input = GetInputLayer();
-
-            /// The hidden layers
-            List<DefaultNeuralLayer> hiddens = GetHiddenLayers();
-
-            /// The output layer
-            DefaultNeuralLayer output = GetOutputLayer();
+            NeuralLayer input = GetInputLayer();
+            var hiddens = GetHiddenLayers();
+            NeuralLayer output = GetOutputLayer();
 
             /**
             double deltaWeight = 0.0;
@@ -189,38 +206,56 @@ namespace Vulcan
             **/
         }
 
-        public int LayerCount
+        /// <summary>
+        /// Gets number of layers in the network
+        /// </summary>
+        public int LayerCount => _layers.Count;
+
+        /// <summary>
+        /// Removes a layer from the network
+        /// </summary>
+        /// <param name="layer">The layer to be removed</param>
+        /// <returns></returns>
+        public bool RemoveLayer(NeuralLayer layer)
         {
-            get
-            {
-                return m_Layers.Count;
-            }
+            return _layers.Remove(layer);
         }
 
-        public bool RemoveLayer(DefaultNeuralLayer layer)
+        /// <summary>
+        /// Gets the input layer of the network
+        /// </summary>
+        /// <returns></returns>
+        public NeuralLayer GetInputLayer()
         {
-            return m_Layers.Remove(layer);
+            return _layers.ElementAt(0);
         }
 
-        public DefaultNeuralLayer GetInputLayer()
+        /// <summary>
+        /// Gets the hidden layer of the network
+        /// </summary>
+        /// <returns></returns>
+        public List<NeuralLayer> GetHiddenLayers()
         {
-            return m_Layers.ElementAt(0);
+            return _layers.GetRange(1, _layers.Count - 2);
         }
 
-        public List<DefaultNeuralLayer> GetHiddenLayers()
+        /// <summary>
+        /// Gets the output layer of the network
+        /// </summary>
+        /// <returns></returns>
+        public NeuralLayer GetOutputLayer()
         {
-            return m_Layers.GetRange(1, m_Layers.Count - 2);
+            return _layers.Last();
         }
 
-        public DefaultNeuralLayer GetOutputLayer()
-        {
-            return m_Layers.Last();
-        }
-
+        /// <summary>
+        /// Returns the current outputs' values
+        /// </summary>
+        /// <returns></returns>
         public ArrayList GetOutputs()
         {
             ArrayList result = new ArrayList();
-            foreach (var n in m_Layers[LayerCount-1].Neurons)
+            foreach (var n in _layers[LayerCount-1].Neurons)
             {
                 result.Add(n.Output);
             }

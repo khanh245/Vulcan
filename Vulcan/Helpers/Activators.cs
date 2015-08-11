@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Vulcan.Helpers
 {
+    /// <summary>
+    /// Internal activator functions
+    /// </summary>
     internal class Activators
     {
         public static double SigmoidFunction (double x)
