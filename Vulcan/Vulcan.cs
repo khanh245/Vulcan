@@ -164,7 +164,7 @@ namespace Vulcan
             var hiddens = GetHiddenLayers();
             NeuralLayer output = GetOutputLayer();
 
-            /**
+            /*
             double deltaWeight = 0.0;
             double error = 0.0;
             double errorSum = 0.0;
@@ -203,7 +203,7 @@ namespace Vulcan
                 deltaWeight = learnRate * error * neuron.Input + neuron.Weight * 0.1;
                 neuron.Weight += deltaWeight;
             }
-            **/
+            */
         }
 
         /// <summary>
