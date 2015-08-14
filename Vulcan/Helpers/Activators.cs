@@ -19,7 +19,7 @@ namespace Vulcan.Helpers
 
         public static double DerivativeSigmoid (double x)
         {
-            return SigmoidFunction(x) - (1.0 / Math.Pow(Math.Exp(x) + 1, 2));
+            return (SigmoidFunction(x) * (1 - SigmoidFunction(x)));
         }
 
         public static double DerivativeTanh (double x)

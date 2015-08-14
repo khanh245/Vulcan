@@ -161,9 +161,14 @@ namespace Vulcan
             Debug.WriteLine("\n----- Back Propagating -----");
 
             NeuralLayer input = GetInputLayer();
-            var hiddens = GetHiddenLayers();
             NeuralLayer output = GetOutputLayer();
 
+            // Output layer's weights update
+            for(int i = _layers.Count - 1; i >= 1; --i)
+            {
+                double errorContribution = (output.Neurons[i].Output * (1 - output.Neurons[i].Output)) * (output.Neurons[i].Output - _expectedOutputs[i]) * output.Neurons[i-1].Output;
+                output.Neurons[i].Weight = output.Neurons[i].Weight - (learnRate * errorContribution);
+            }
             /*
             double deltaWeight = 0.0;
             double error = 0.0;
