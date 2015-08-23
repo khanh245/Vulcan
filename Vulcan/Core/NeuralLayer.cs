@@ -1,113 +1,127 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="NeuralLayer.cs" company="Ascension">
+//     All rights reserved.
+// </copyright>
+// <author>Khanh Nguyen</author>
+// <date>08/23/2015</date>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace Vulcan.Core
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     /// <summary>
-    /// Represents a neural layer consists of neuron(s)
+    ///     Represents a neural layer consists of neuron(s)
     /// </summary>
     public class NeuralLayer
     {
         /// <summary>
-        /// The name of the neural layer
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// List of all the neurons
-        /// </summary>
-        public List<Neuron> Neurons { get; }
-
-        /// <summary>
-        /// Initializes an instance of a neural layer
+        ///     Initializes a new instance of the <see cref="NeuralLayer" /> class.
         /// </summary>
         /// <param name="name">The name of the layer</param>
         public NeuralLayer(string name)
         {
-            Neurons = new List<Neuron>();
-            Name = name;
+            this.Neurons = new List<Neuron>();
+            this.Name = name;
         }
 
         /// <summary>
-        /// Gets a random weight value
+        ///     List of all the neurons
         /// </summary>
-        /// <returns></returns>
-        private double GetRandomWeight()
-        {
-            Random rand = new Random(Guid.NewGuid().GetHashCode());
-            return rand.NextDouble();
-        }
+        /// <value>
+        ///     List of <see cref="Neuron" />.
+        /// </value>
+        public List<Neuron> Neurons { get; }
 
         /// <summary>
-        /// Adds a neuron with random weight
+        ///     The name of the neural layer
+        /// </summary>
+        /// <value>
+        ///     string
+        /// </value>
+        private string Name { get; set; }
+
+        /// <summary>
+        ///     Adds a neuron with random weight
         /// </summary>
         public void AddNeuron()
         {
-            Neuron neuron = new Neuron { Weight = GetRandomWeight() };
-            Neurons.Add(neuron);
+            var neuron = new Neuron { Weight = this.GetRandomWeight() };
+            this.Neurons.Add(neuron);
         }
 
         /// <summary>
-        /// Adds a neuron with desired weight value
+        ///     Adds a neuron with desired weight value
         /// </summary>
         /// <param name="weight">The weight value</param>
         public void AddNeuron(double weight)
         {
-            Neurons.Add(new Neuron { Weight = weight });
+            this.Neurons.Add(new Neuron { Weight = weight });
         }
 
         /// <summary>
-        /// Adds X number of neurons with random weights
+        ///     Adds X number of neurons with random weights
         /// </summary>
         /// <param name="count">Number of neurons to add</param>
         public void AddNeurons(int count)
         {
-            for (int i = 0; i < count; ++i)
+            for (var i = 0; i < count; ++i)
             {
-                Neurons.Add(new Neuron { Weight = GetRandomWeight() });
+                this.Neurons.Add(new Neuron { Weight = this.GetRandomWeight() });
             }
         }
 
         /// <summary>
-        /// Adds X number of neurons with X number of weights
+        ///     Adds X number of neurons with X number of weights
         /// </summary>
         /// <param name="weights">Array of weight values</param>
         public void AddNeurons(params double[] weights)
         {
-            foreach (double w in weights)   
+            foreach (var w in weights)
             {
-                Neurons.Add(new Neuron { Weight = w });
+                this.Neurons.Add(new Neuron { Weight = w });
             }
         }
 
         /// <summary>
-        /// Removes a neuron by Id
+        ///     Removes a neuron by Id
         /// </summary>
         /// <param name="id">The Id of a neuron</param>
         public void RemoveNeuron(int id)
         {
-            Neurons.RemoveAt(id);
+            this.Neurons.RemoveAt(id);
         }
 
         /// <summary>
-        /// Removes a neuron
+        ///     Removes a neuron
         /// </summary>
         /// <param name="neuron">The neuron to be removed</param>
-        /// <returns></returns>
+        /// <returns>True if it succeeds.</returns>
         public bool RemoveNeuron(Neuron neuron)
         {
-            return Neurons.Remove(neuron);
+            return this.Neurons.Remove(neuron);
         }
 
         /// <summary>
-        /// Gets a neuron by Id
+        ///     Gets a neuron by Id
         /// </summary>
         /// <param name="id">The Id of the neuron</param>
-        /// <returns></returns>
-        public Neuron GetNeuron (int id)
+        /// <returns>A <see cref="Neuron" /></returns>
+        public Neuron GetNeuron(int id)
         {
-            return Neurons.ElementAt(id);
+            return this.Neurons.ElementAt(id);
+        }
+
+        /// <summary>
+        ///     Gets a random weight value
+        /// </summary>
+        /// <returns>Random weight</returns>
+        private double GetRandomWeight()
+        {
+            var rand = new Random(Guid.NewGuid().GetHashCode());
+            return rand.NextDouble();
         }
     }
 }

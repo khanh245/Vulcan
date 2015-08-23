@@ -1,90 +1,118 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Vulcan.Core;
-using Vulcan.Helpers;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Vulcan.cs" company="Ascension">
+//     All rights reserved.
+// </copyright>
+// <author>Khanh Nguyen</author>
+// <date>08/23/2015</date>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace Vulcan
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+
+    using global::Vulcan.Core;
+    using global::Vulcan.Helpers;
+
     /// <summary>
-    /// Represents the Neural Network - Vulcan
+    ///     Represents the Neural Network - Vulcan
     /// </summary>
     public class Vulcan
     {
         /// <summary>
-        /// List of all neural layers in the network
+        ///     List of all expected outputs of the network
         /// </summary>
-        private readonly List<NeuralLayer> _layers = new List<NeuralLayer>();
+        private readonly List<double> expectedOutputs = new List<double>();
 
         /// <summary>
-        /// List of all expected outputs of the network
+        ///     List of all neural layers in the network
         /// </summary>
-        private readonly List<double> _expectedOutputs = new List<double>();
+        private readonly List<NeuralLayer> layers = new List<NeuralLayer>();
 
         /// <summary>
-        /// The error of the neural network
-        /// </summary>
-        public double Error { get; private set; }
-
-        /// <summary>
-        /// Initializes an instance of the neural network with X number of hidden layers
+        ///     Initializes a new instance of the <see cref="Vulcan" /> class with X number of hidden layers
         /// </summary>
         /// <param name="hidden">Number of hidden layer(s)</param>
         public Vulcan(int hidden)
         {
-            Error = 0.0;
+            this.Error = 0.0;
 
-            NeuralLayer input = new NeuralLayer("Input");
-            AddLayer(input);
+            var input = new NeuralLayer("Input");
+            this.AddLayer(input);
 
-            for (int i = 0; i < hidden; ++i)
+            for (var i = 0; i < hidden; ++i)
             {
-                NeuralLayer layer = new NeuralLayer($"Hidden{i + 1}");
-                AddLayer(layer);
+                var layer = new NeuralLayer($"Hidden{i + 1}");
+                this.AddLayer(layer);
             }
 
-            NeuralLayer output = new NeuralLayer("Output");
-            AddLayer(output);
+            var output = new NeuralLayer("Output");
+            this.AddLayer(output);
         }
 
         /// <summary>
-        /// Feeding forward algorithm
+        ///     The error of the neural network
+        /// </summary>
+        /// <value>
+        ///     double
+        /// </value>
+        public double Error { get; private set; }
+
+        /// <summary>
+        ///     Gets number of layers in the network
+        /// </summary>
+        /// <value>
+        ///     integer
+        /// </value>
+        public int LayerCount => this.layers.Count;
+
+        /// <summary>
+        ///     Feeding forward algorithm
         /// </summary>
         /// <param name="datas">The datas to be fed to the network</param>
+        /// <exception cref="ArgumentException"></exception>
         public void FeedForward(params double[] datas)
         {
-            if (datas.Count() != _layers[0].Neurons.Count) throw new ArgumentException();
+            if (datas.Count() != this.layers[0].Neurons.Count)
+            {
+                throw new ArgumentException();
+            }
 
             Debug.WriteLine("\n----- Feeding Forward -----");
 
             int count;
-            NeuralLayer input = GetInputLayer();
-            NeuralLayer output = GetOutputLayer();
+            var input = this.GetInputLayer();
+            var output = this.GetOutputLayer();
 
             Debug.WriteLine("Input Layer");
 
             // Input layer flowthrough
-            for (int i = 0; i < input.Neurons.Count; ++i)
+            for (var i = 0; i < input.Neurons.Count; ++i)
             {
                 input.Neurons[i].Input = datas[i];
                 input.Neurons[i].Output = Activators.SigmoidFunction(input.Neurons[i].Input * input.Neurons[i].Weight);
 
-                Debug.WriteLine("Neuron {0} --- Input: {1}, Output {2}", i,  input.Neurons[i].Input, input.Neurons[i].Output);
+                Debug.WriteLine(
+                    "Neuron {0} --- Input: {1}, Output {2}",
+                    i,
+                    input.Neurons[i].Input,
+                    input.Neurons[i].Output);
             }
 
             Debug.Write("\n");
 
             // Hidden layers flowthrough
-            for (int i = 1; i < _layers.Count - 1; ++i)
+            for (var i = 1; i < this.layers.Count - 1; ++i)
             {
                 Debug.WriteLine("Hidden Layer {0}", i);
 
-                double inputToHidden = _layers[i - 1].Neurons.Sum(neuron => neuron.Output);
+                var inputToHidden = this.layers[i - 1].Neurons.Sum(neuron => neuron.Output);
 
                 count = 0;
-                foreach (var neuron in _layers[i].Neurons)
+                foreach (var neuron in this.layers[i].Neurons)
                 {
                     neuron.Input = inputToHidden;
                     neuron.Output = Activators.SigmoidFunction(neuron.Input * neuron.Weight);
@@ -100,7 +128,7 @@ namespace Vulcan
             // Output layer flowthrough
             foreach (var neuron in output.Neurons)
             {
-                double hiddenToOutput = GetHiddenLayers().Last().Neurons.Sum(n => n.Output);
+                var hiddenToOutput = this.GetHiddenLayers().Last().Neurons.Sum(n => n.Output);
 
                 neuron.Input = hiddenToOutput;
                 neuron.Output = Activators.SigmoidFunction(neuron.Input * neuron.Weight);
@@ -109,66 +137,69 @@ namespace Vulcan
             }
 
             // Calculating total error for neural network
-            for (int i = 0; i < _expectedOutputs.Count; ++i)
+            for (var i = 0; i < this.expectedOutputs.Count; ++i)
             {
-                Error += (Math.Pow((output.Neurons[i].Output - _expectedOutputs[i]), 2) / 2.0);
+                this.Error += Math.Pow(output.Neurons[i].Output - this.expectedOutputs[i], 2) / 2.0;
             }
 
             Debug.Write("\n");
-            Debug.WriteLine("Net Error: {0}", Error);
+            Debug.WriteLine("Net Error: {0}", this.Error);
         }
 
         /// <summary>
-        /// Adds a neural layer to the network
+        ///     Adds a neural layer to the network
         /// </summary>
         /// <param name="layer">The layer to be added</param>
         public void AddLayer(NeuralLayer layer)
         {
-            _layers.Add(layer);
+            this.layers.Add(layer);
         }
 
         /// <summary>
-        /// Trains the neural network
+        ///     Trains the neural network
         /// </summary>
         /// <param name="learnRate">The learning rate</param>
         /// <param name="datas">Data to be trained</param>
         public void Train(double learnRate, params double[] datas)
         {
-            FeedForward(datas);
-            BackPropagate(learnRate);
+            this.FeedForward(datas);
+            this.BackPropagate(learnRate);
         }
 
         /// <summary>
-        /// Sets the expecting outputs of the network
+        ///     Sets the expecting outputs of the network
         /// </summary>
         /// <param name="expecteds">The expected outputs</param>
         public void Expecting(params double[] expecteds)
         {
-            _expectedOutputs.Clear();
+            this.expectedOutputs.Clear();
 
             foreach (var e in expecteds)
             {
-                _expectedOutputs.Add(e);
+                this.expectedOutputs.Add(e);
             }
         }
 
         /// <summary>
-        /// Back propagating result and update where necessary
+        ///     Back propagating result and update where necessary
         /// </summary>
         /// <param name="learnRate">The learning rate</param>
-        private void BackPropagate(double learnRate)
+        public void BackPropagate(double learnRate)
         {
             Debug.WriteLine("\n----- Back Propagating -----");
 
-            NeuralLayer input = GetInputLayer();
-            NeuralLayer output = GetOutputLayer();
+            var input = this.GetInputLayer();
+            var output = this.GetOutputLayer();
 
             // Output layer's weights update
-            for(int i = _layers.Count - 1; i >= 1; --i)
+            for (var i = this.layers.Count - 1; i >= 1; --i)
             {
-                double errorContribution = (output.Neurons[i].Output * (1 - output.Neurons[i].Output)) * (output.Neurons[i].Output - _expectedOutputs[i]) * output.Neurons[i-1].Output;
+                var errorContribution = (output.Neurons[i].Output * (1 - output.Neurons[i].Output))
+                                        * (output.Neurons[i].Output - this.expectedOutputs[i])
+                                        * output.Neurons[i].Output;
                 output.Neurons[i].Weight = output.Neurons[i].Weight - (learnRate * errorContribution);
             }
+
             /*
             double deltaWeight = 0.0;
             double error = 0.0;
@@ -212,55 +243,50 @@ namespace Vulcan
         }
 
         /// <summary>
-        /// Gets number of layers in the network
-        /// </summary>
-        public int LayerCount => _layers.Count;
-
-        /// <summary>
-        /// Removes a layer from the network
+        ///     Removes a layer from the network
         /// </summary>
         /// <param name="layer">The layer to be removed</param>
-        /// <returns></returns>
+        /// <returns>True if succeeds</returns>
         public bool RemoveLayer(NeuralLayer layer)
         {
-            return _layers.Remove(layer);
+            return this.layers.Remove(layer);
         }
 
         /// <summary>
-        /// Gets the input layer of the network
+        ///     Gets the input layer of the network
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The <see cref="NeuralLayer" /></returns>
         public NeuralLayer GetInputLayer()
         {
-            return _layers.ElementAt(0);
+            return this.layers.ElementAt(0);
         }
 
         /// <summary>
-        /// Gets the hidden layer of the network
+        ///     Gets the hidden layer of the network
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of <see cref="NeuralLayer" /></returns>
         public List<NeuralLayer> GetHiddenLayers()
         {
-            return _layers.GetRange(1, _layers.Count - 2);
+            return this.layers.GetRange(1, this.layers.Count - 2);
         }
 
         /// <summary>
-        /// Gets the output layer of the network
+        ///     Gets the output layer of the network
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The <see cref="NeuralLayer" /></returns>
         public NeuralLayer GetOutputLayer()
         {
-            return _layers.Last();
+            return this.layers.Last();
         }
 
         /// <summary>
-        /// Returns the current outputs' values
+        ///     Returns the current outputs' values
         /// </summary>
-        /// <returns></returns>
+        /// <returns><see cref="ArrayList" /> of outputs.</returns>
         public ArrayList GetOutputs()
         {
-            ArrayList result = new ArrayList();
-            foreach (var n in _layers[LayerCount-1].Neurons)
+            var result = new ArrayList();
+            foreach (var n in this.layers[this.LayerCount - 1].Neurons)
             {
                 result.Add(n.Output);
             }

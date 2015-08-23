@@ -12,7 +12,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1DD3E24C-F510-4C7C-88A7-820C96DD4775}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{1DD3E24C-F510-4C7C-88A7-820C96DD4775}.Release|Any CPU.ActiveCfg = Release|x86
+		{1DD3E24C-F510-4C7C-88A7-820C96DD4775}.Debug|Any CPU.Build.0 = Debug|x86
+		{1DD3E24C-F510-4C7C-88A7-820C96DD4775}.Release|Any CPU.ActiveCfg = Debug|x86
+		{1DD3E24C-F510-4C7C-88A7-820C96DD4775}.Release|Any CPU.Build.0 = Debug|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

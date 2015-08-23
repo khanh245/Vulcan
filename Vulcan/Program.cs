@@ -1,25 +1,34 @@
-﻿using System;
-using System.Collections;
-using Vulcan.Core;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Program.cs" company="Ascension">
+//     All rights reserved.
+// </copyright>
+// <author>Khanh Nguyen</author>
+// <date>08/23/2015</date>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace Vulcan
 {
-    class Program
+    using System;
+
+    /// <summary>
+    ///     Main exerciser for the Neural Network.
+    /// </summary>
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            Vulcan vulcan = new Vulcan(1);
-            
-            NeuralLayer input = vulcan.GetInputLayer();
-            input.AddNeurons(1.0, 1.0);     // num input neurons
+            var vulcan = new Vulcan(1);
+
+            var input = vulcan.GetInputLayer();
+            input.AddNeurons(1.0, 1.0); // num input neurons
 
             var hiddens = vulcan.GetHiddenLayers();
             foreach (var hidden in hiddens)
             {
                 hidden.AddNeurons(3);
             }
-            
-            NeuralLayer output = vulcan.GetOutputLayer();
+
+            var output = vulcan.GetOutputLayer();
             output.AddNeuron();
 
             // neural network learns
@@ -57,10 +66,11 @@ namespace Vulcan
                 vulcan.Train(0.2, 0.3, 0.3);
                 vulcan.Train(0.2, 0.2, 0.2);
                 vulcan.Train(0.2, 0.1, 0.1);
-            } while (vulcan.Error > 0.0001);
+            }
+            while (vulcan.Error > 0.0001);
 
             vulcan.FeedForward(0.0, 0.0);
-            ArrayList result = vulcan.GetOutputs();
+            var result = vulcan.GetOutputs();
 
             Console.WriteLine("Result: ");
             foreach (var item in result)
